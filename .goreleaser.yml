@@ -3,7 +3,6 @@ project_name: test-goreleaser
 env:
   - GO111MODULE=on
   - CGO_ENABLED=0
-  - COSIGN_YES=true
 
 # Prevents parallel builds from stepping on each others toes downloading modules
 before:
@@ -41,7 +40,7 @@ builds:
     tags:
       - embed
     ldflags:
-      - "{{ .Env.LDFLAGS }}"
+      - "-s -w -X main.Version={{.Version}}"
   - id: darwin-amd64
     binary: test-goreleaser-darwin-amd64
     no_unique_dist_dir: true
@@ -59,7 +58,7 @@ builds:
     tags:
       - embed
     ldflags:
-      - "{{ .Env.LDFLAGS }}"
+      - "-s -w -X main.Version={{.Version}}"
   - id: darwin-arm64
     binary: test-goreleaser-darwin-arm64
     no_unique_dist_dir: true
@@ -73,7 +72,7 @@ builds:
     tags:
       - embed
     ldflags:
-      - "{{.Env.LDFLAGS}}"
+      - "-s -w -X main.Version={{.Version}}"
 
 kos:
   - build: linux
@@ -81,7 +80,7 @@ kos:
     base_image: cgr.dev/chainguard/static
     main: ./cmd/server
     tags:
-      - '{{.Tag}}'
+      - '{{ .Tag }}'
       - latest
     creation_time: '{{.CommitTimestamp}}'
     ko_data_creation_time: '{{.CommitTimestamp}}'

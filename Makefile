@@ -37,6 +37,9 @@ else
     BUILD_DATE ?= $(shell date "$(DATE_FMT)")
 endif
 
+PLAYGROUND_VERSION_PKG=main
+LDFLAGS=-X $(PLAYGROUND_VERSION_PKG).Version=$(GIT_VERSION)
+
 gen: ## Generates code
 	cp -pr $(SERVER_STATIC_DIR) $(SERVER_EMBED_STATIC_DIR)
 
