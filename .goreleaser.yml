@@ -12,8 +12,8 @@ before:
     - make build-static
     - make gen
 
-gomod:
-  proxy: true
+# gomod:
+#   proxy: true
 
 sboms:
 - artifacts: binary
