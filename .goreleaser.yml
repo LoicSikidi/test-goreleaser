@@ -1,0 +1,126 @@
+project_name: test-goreleaser
+
+env:
+  - GO111MODULE=on
+  - CGO_ENABLED=0
+  - COSIGN_YES=true
+
+# Prevents parallel builds from stepping on each others toes downloading modules
+before:
+  hooks:
+    - go mod tidy
+    - make clean-static
+    - make build-static
+    - make gen
+
+gomod:
+  proxy: true
+
+sboms:
+- artifacts: binary
+
+builds:
+  - id: linux
+    binary: test-goreleaser-linux-{{ .Arch }}
+    no_unique_dist_dir: true
+    main: ./cmd/server
+    flags:
+      - -trimpath
+    mod_timestamp: '{{ .CommitTimestamp }}'
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+      - arm
+      - s390x
+      - ppc64le
+      - riscv64
+    goarm:
+      - '7'
+    tags:
+      - embed
+    ldflags:
+      - "{{ .Env.LDFLAGS }}"
+  - id: darwin-amd64
+    binary: test-goreleaser-darwin-amd64
+    no_unique_dist_dir: true
+    hooks:
+      pre:
+       - make gen
+    main: ./cmd/server
+    flags:
+      - -trimpath
+    mod_timestamp: '{{ .CommitTimestamp }}'
+    goos:
+      - darwin
+    goarch:
+      - amd64
+    tags:
+      - embed
+    ldflags:
+      - "{{ .Env.LDFLAGS }}"
+  - id: darwin-arm64
+    binary: test-goreleaser-darwin-arm64
+    no_unique_dist_dir: true
+    main: ./cmd/server
+    flags:
+      - -trimpath
+    goos:
+      - darwin
+    goarch:
+      - arm64
+    tags:
+      - embed
+    ldflags:
+      - "{{.Env.LDFLAGS}}"
+
+kos:
+  - build: linux
+    repository: "{{ .Env.KO_PREFIX }}"
+    base_image: cgr.dev/chainguard/static
+    main: ./cmd/server
+    tags:
+      - '{{.Tag}}'
+      - latest
+    creation_time: '{{.CommitTimestamp}}'
+    ko_data_creation_time: '{{.CommitTimestamp}}'
+    sbom: spdx
+    bare: true
+    preserve_import_paths: true
+    base_import_paths: true
+    platforms:
+      - all
+
+signs:
+  # Keyless
+  - id: test-goreleaser-keyless
+    signature: "${artifact}-keyless.sig"
+    certificate: "${artifact}-keyless.pem"
+    cmd: cosign
+    args: ["sign-blob", "--output-signature", "${artifact}-keyless.sig", "--output-certificate", "${artifact}-keyless.pem", "${artifact}", "--yes"]
+    artifacts: binary
+  - id: checksum-keyless
+    signature: "${artifact}-keyless.sig"
+    certificate: "${artifact}-keyless.pem"
+    cmd: cosign
+    args: ["sign-blob", "--output-signature", "${artifact}-keyless.sig", "--output-certificate", "${artifact}-keyless.pem", "${artifact}", "--yes"]
+    artifacts: checksum
+
+archives:
+  - format: binary
+    name_template: "{{ .Binary }}"
+    allow_different_binary_count: true
+
+checksum:
+  name_template: "{{ .ProjectName }}_checksums.txt"
+
+snapshot:
+  name_template: SNAPSHOT-{{ .ShortCommit }}
+
+release:
+  prerelease: allow # remove this when we start publishing non-prerelease or set to auto
+  draft: true # allow for manual edits
+  github:
+    owner: LoicSikidi
+    name: test-goreleaser
