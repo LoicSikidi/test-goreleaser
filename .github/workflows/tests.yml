@@ -9,7 +9,7 @@ on:
       - '!**.txt'
       - '!images/**'
     branches:
-      - 'main'
+      - 'master'
       - 'release-*'
   pull_request:
 
