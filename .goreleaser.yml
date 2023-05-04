@@ -73,7 +73,7 @@ builds:
 
 kos:
   - build: linux
-    repository: "{{ .Env.KO_PREFIX }}"
+    # repository: "{{ .Env.KO_PREFIX }}"
     base_image: cgr.dev/chainguard/static
     main: ./cmd/server
     tags:
@@ -83,7 +83,7 @@ kos:
     ko_data_creation_time: '{{.CommitTimestamp}}'
     sbom: spdx
     bare: true
-    preserve_import_paths: true
+    preserve_import_paths: false
     base_import_paths: true
     platforms:
       - all
