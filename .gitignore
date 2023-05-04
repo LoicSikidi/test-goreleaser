@@ -23,6 +23,7 @@ kodata
 # WASM specifics
 *.wasm
 wasm_exec.js
+package-lock.json
 
 # IDE Specifics
 # intellij

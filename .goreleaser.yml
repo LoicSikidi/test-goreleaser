@@ -44,9 +44,6 @@ builds:
   - id: darwin-amd64
     binary: test-goreleaser-darwin-amd64
     no_unique_dist_dir: true
-    hooks:
-      pre:
-       - make gen
     main: ./cmd/server
     flags:
       - -trimpath
